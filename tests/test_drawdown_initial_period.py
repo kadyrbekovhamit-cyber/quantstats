@@ -16,6 +16,24 @@ def test_unrecovered_initial_drawdown_has_details():
     assert row["max drawdown"] / 100 == pytest.approx(stats.max_drawdown(returns))
 
 
+def test_hourly_initial_drawdown_preserves_calendar_day_reporting():
+    # Returns [-0.05, -0.05, 0.02] give equity [0.95, 0.9025, 0.92055]
+    # relative to starting equity 1, and therefore these drawdowns.
+    drawdown = pd.Series(
+        [-0.05, -0.0975, -0.07945],
+        index=pd.date_range("2024-01-01", periods=3, freq="h"),
+    )
+    details = stats.drawdown_details(drawdown)
+    assert len(details) == 1
+    row = details.iloc[0]
+    # The existing report formats dates and counts inclusive calendar days.
+    assert (row["start"], row["valley"], row["end"], row["days"]) == (
+        "2024-01-01", "2024-01-01", "2024-01-01", 1
+    )
+    # Starting equity 1 falls to 0.9025 after the second hourly return.
+    assert row["max drawdown"] == pytest.approx(-9.75)
+
+
 @pytest.mark.parametrize("drawdowns, expected_count", [
     ([-0.1, 0.0, 0.0], 1),
     ([-0.1, 0.0, -0.2, -0.1], 2),
