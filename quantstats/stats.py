@@ -2568,6 +2568,12 @@ def recovery_factor(returns, rf=0.0, prepare_returns=True):
     Higher values indicate better recovery characteristics. Negative excess
     total returns produce a negative recovery factor.
 
+    The numerator is the arithmetic sum of the returns minus ``rf``
+    (``returns.sum() - rf``), not the compounded total return, and ``rf``
+    is subtracted once from that sum rather than per period. The
+    denominator is the magnitude of the maximum drawdown, which is measured
+    on compounded equity.
+
     Args:
         returns (pd.Series): Return series to analyze
         rf (float): Risk-free rate (default: 0.0)
